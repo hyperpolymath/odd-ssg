@@ -1,15 +1,15 @@
 ;; SPDX-License-Identifier: AGPL-3.0-or-later
 ;; SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
-;; ECOSYSTEM.scm — template-repo
+;; ECOSYSTEM.scm — odd-ssg
 
 (ecosystem
-  (version "1.0.0")
-  (name "template-repo")
-  (type "project")
-  (purpose "Project in the hyperpolymath ecosystem")
+  (version "0.1.0")
+  (name "odd-ssg")
+  (type "satellite")
+  (purpose "Satellite SSG implementation providing MCP adapters for 30 static site generators")
 
   (position-in-ecosystem
-    "Part of hyperpolymath ecosystem. Follows RSR guidelines.")
+    "Satellite implementation in hyperpolymath ecosystem. Integrates with poly-ssg-mcp hub to provide MCP adapters for 30 SSGs. Follows RSR guidelines.")
 
   (related-projects
     (project
@@ -24,5 +24,5 @@
              (url "https://github.com/hyperpolymath/rhodium-standard-repositories")
              (relationship "standard")))
 
-  (what-this-is "Project in the hyperpolymath ecosystem")
-  (what-this-is-not "- NOT exempt from RSR compliance"))
+  (what-this-is "Satellite SSG adapter provider with 30 MCP-compatible adapters for various static site generators")
+  (what-this-is-not "- NOT the hub (that's poly-ssg-mcp)\n- NOT exempt from RSR compliance"))

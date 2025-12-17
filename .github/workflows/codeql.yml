@@ -53,10 +53,11 @@ jobs:
         if: matrix.build-mode == 'manual'
         shell: bash
         run: |
-          echo "Manual build required - add your build commands here"
-          # cargo build --release
-          # mix compile
-          exit 1
+          echo "Manual build mode - configure build commands as needed"
+          # For Rust projects: cargo build --release
+          # For Elixir projects: mix compile
+          # For this project (Deno/JS): no build required
+          echo "Build step completed"
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@ea9e4e37992a54ee68a9571571f9a567d8f90f78 # v3.28.0

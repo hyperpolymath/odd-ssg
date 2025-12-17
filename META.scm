@@ -1,8 +1,8 @@
 ;; SPDX-License-Identifier: AGPL-3.0-or-later
 ;; SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
-;;; META.scm — template-repo
+;;; META.scm — odd-ssg
 
-(define-module (template-repo meta)
+(define-module (odd-ssg meta)
   #:export (architecture-decisions development-practices design-rationale))
 
 (define architecture-decisions
@@ -15,7 +15,7 @@
      (consequences . ("RSR Gold target" "SHA-pinned actions" "SPDX headers" "Multi-platform CI")))))
 
 (define development-practices
-  '((code-style (languages . ("unknown")) (formatter . "auto-detect") (linter . "auto-detect"))
+  '((code-style (languages . ("javascript" "deno")) (formatter . "deno fmt") (linter . "deno lint"))
     (security (sast . "CodeQL") (credentials . "env vars only"))
     (testing (coverage-minimum . 70))
     (versioning (scheme . "SemVer 2.0.0"))))
