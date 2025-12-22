@@ -1,1 +1,295 @@
+= odd-ssg
+:toc: macro
+:toclevels: 2
+:icons: font
 
+Satellite SSG adapter provider with 30 MCP-compatible adapters for static site generators.
+
+image:https://img.shields.io/badge/license-AGPL--3.0--or--later-blue[License]
+image:https://img.shields.io/badge/RSR-Gold-gold[RSR Compliance]
+image:https://img.shields.io/badge/adapters-30-green[Adapters]
+
+toc::[]
+
+== Overview
+
+odd-ssg is a satellite implementation in the hyperpolymath ecosystem that provides:
+
+* **30 SSG Adapters** - MCP-compatible adapters for static site generators across 15+ languages
+* **Mill-Based Synthesis Engine** - Template processing inspired by Ada Lovelace's Analytical Engine
+* **NoteG Language Tooling** - Lexer, parser, and LSP for .noteg files
+* **Accessibility First** - Native support for BSL, ASL, GSL, Makaton, and Easy Read
+
+== Quick Start
+
+[source,bash]
+----
+# Clone repository
+git clone https://github.com/hyperpolymath/odd-ssg
+cd odd-ssg
+
+# Install dependencies (using asdf)
+asdf install
+
+# Run tests
+just test
+
+# Start MCP server
+just mcp
+----
+
+== Supported SSG Adapters
+
+[cols="2,3,3"]
+|===
+|Language |SSGs |Status
+
+|Rust
+|Zola, Cobalt, mdBook
+|✅ Complete
+
+|Haskell
+|Hakyll, Ema
+|✅ Complete
+
+|Elixir
+|Serum, NimblePublisher, Tableau
+|✅ Complete
+
+|Clojure
+|Cryogen, Perun, Babashka
+|✅ Complete
+
+|Racket
+|Frog, Pollen
+|✅ Complete
+
+|Julia
+|Franklin.jl, Documenter.jl, StaticWebPages.jl
+|✅ Complete
+
+|Scala
+|Laika, ScalaTex
+|✅ Complete
+
+|OCaml
+|YOCaml
+|✅ Complete
+
+|Swift
+|Publish
+|✅ Complete
+
+|Kotlin
+|Orchid
+|✅ Complete
+
+|Crystal
+|Marmot
+|✅ Complete
+
+|Nim
+|Nimrod
+|✅ Complete
+
+|D
+|Reggae
+|✅ Complete
+
+|F#
+|Fornax
+|✅ Complete
+
+|Erlang
+|Zotonic
+|✅ Complete
+
+|Tcl
+|Wub
+|✅ Complete
+
+|Common Lisp
+|Coleslaw
+|✅ Complete
+|===
+
+== Usage
+
+=== As MCP Server
+
+[source,bash]
+----
+# Start the MCP server
+deno run --allow-read --allow-write --allow-run noteg-mcp/server.ts
+
+# Or use just
+just mcp
+----
+
+=== As Library
+
+[source,typescript]
+----
+import { Engine, loadAdapter, ADAPTERS } from "@hyperpolymath/odd-ssg";
+
+// List available adapters
+console.log("Available adapters:", ADAPTERS);
+
+// Load and use an adapter
+const zola = await loadAdapter("zola");
+const connected = await zola.connect();
+
+if (connected) {
+  const result = await zola.tools
+    .find(t => t.name === "zola_build")
+    .execute({ path: "./my-site" });
+  console.log(result);
+}
+----
+
+=== Build System
+
+[source,bash]
+----
+# Build commands
+just build              # Build the project
+just build-drafts       # Include drafts
+just watch              # Watch mode
+
+# Test commands
+just test               # All tests
+just test-unit          # Unit tests
+just test-e2e           # E2E tests
+just test-bernoulli     # Bernoulli verification
+
+# Development
+just dev                # Development server
+just lsp                # Start language server
+just lint               # Lint code
+just fmt                # Format code
+----
+
+== Architecture
+
+=== Mill-Based Synthesis Engine
+
+The core engine implements Ada Lovelace's Analytical Engine paradigm:
+
+* **Operation Cards** - Template instructions
+* **Variable Cards** - Data bindings
+* **Mill** - Processing unit
+* **Store** - Variable persistence
+
+[source,typescript]
+----
+import { Engine, createMill, createStore } from "@hyperpolymath/odd-ssg";
+
+const engine = new Engine();
+engine.loadVariables([
+  { name: "title", type: "string", value: "Hello World" }
+]);
+
+const result = await engine.execute([
+  { operation: "load", operands: ["title"] },
+  { operation: "emit", operands: [] }
+]);
+----
+
+=== MCP Protocol
+
+Adapters expose tools via the Model Context Protocol:
+
+[source,json]
+----
+{
+  "tools": [
+    {
+      "name": "zola_build",
+      "description": "Build the Zola site",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": { "type": "string" },
+          "baseUrl": { "type": "string" },
+          "outputDir": { "type": "string" }
+        }
+      }
+    }
+  ]
+}
+----
+
+== Accessibility
+
+odd-ssg provides native accessibility support:
+
+* **BSL** - British Sign Language metadata
+* **ASL** - American Sign Language metadata
+* **GSL** - German Sign Language metadata
+* **Makaton** - Symbol-based communication
+* **Easy Read** - Simplified content versions
+
+See link:a11y/schema.json[Accessibility Schema] for details.
+
+== Project Structure
+
+[source]
+----
+odd-ssg/
+├── adapters/           # 30 SSG adapters
+├── engine/src/         # Mill-based synthesis core
+├── ssg/src/            # Site generation pipeline
+├── noteg-lang/src/     # Language tooling (lexer, parser, LSP)
+├── noteg-mcp/          # MCP server
+├── a11y/               # Accessibility schemas
+├── tests/              # Unit, E2E, Bernoulli tests
+├── examples/           # Example content and config
+├── *.scm               # SCM configuration files
+├── justfile            # Task runner
+├── Mustfile            # Declarative requirements
+├── Containerfile       # Container build
+└── cookbook.adoc       # Recipes and workflows
+----
+
+== SCM Files
+
+* link:META.scm[META.scm] - Architecture decisions, development practices
+* link:ECOSYSTEM.scm[ECOSYSTEM.scm] - Ecosystem position, related projects
+* link:STATE.scm[STATE.scm] - Current state, completion metrics
+* link:PLAYBOOK.scm[PLAYBOOK.scm] - Operational runbooks
+* link:AGENTIC.scm[AGENTIC.scm] - AI agent integration
+* link:NEUROSYM.scm[NEUROSYM.scm] - Neuro-symbolic reasoning
+
+== Security
+
+* CodeQL analysis on all PRs
+* SHA-pinned GitHub Actions
+* Deno permission model for sandboxing
+* No eval or shell injection
+* Environment-only credentials
+
+See link:SECURITY.md[Security Policy] for vulnerability reporting.
+
+== Contributing
+
+See link:CONTRIBUTING.md[Contributing Guide] for guidelines.
+
+[source,bash]
+----
+# Pre-commit checks
+just pre-commit
+
+# Full CI simulation
+just ci
+----
+
+== License
+
+AGPL-3.0-or-later
+
+Copyright 2025 Jonathan D.A. Jewell
+
+== Links
+
+* https://github.com/hyperpolymath/poly-ssg-mcp[poly-ssg-mcp] - Hub project
+* https://github.com/hyperpolymath/rhodium-standard-repositories[RSR] - Compliance standard
