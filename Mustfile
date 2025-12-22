@@ -1,0 +1,188 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
+# odd-ssg Mustfile - Declarative Build Requirements
+#
+# Mustfile defines WHAT must be true, not HOW to achieve it.
+# Each rule declares a requirement that must be satisfied.
+
+# ============================================================================
+# CORE REQUIREMENTS
+# ============================================================================
+
+# All TypeScript files must pass type checking
+must check-types:
+  condition: deno check **/*.ts
+  message: "TypeScript type checking must pass"
+
+# All tests must pass
+must test-pass:
+  condition: deno test --allow-read --allow-write tests/
+  message: "All tests must pass"
+
+# Code must be formatted
+must formatted:
+  condition: deno fmt --check
+  message: "Code must be formatted with deno fmt"
+
+# Code must pass linting
+must linted:
+  condition: deno lint
+  message: "Code must pass deno lint"
+
+# ============================================================================
+# ADAPTER REQUIREMENTS
+# ============================================================================
+
+# All adapters must have valid syntax
+must adapter-syntax:
+  condition: |
+    for f in adapters/*.js; do
+      deno check "$f" || exit 1
+    done
+  message: "All adapter files must have valid JavaScript syntax"
+
+# Each adapter must export required interface
+must adapter-interface:
+  condition: |
+    deno eval "
+      import { name, language, description, connect, disconnect, isConnected, tools } from './adapters/zola.js';
+      if (!name || !language || !tools) throw new Error('Missing exports');
+    "
+  message: "Adapters must export: name, language, description, connect, disconnect, isConnected, tools"
+
+# ============================================================================
+# SECURITY REQUIREMENTS
+# ============================================================================
+
+# No hardcoded secrets
+must no-secrets:
+  condition: |
+    ! grep -rE "(password|secret|api_key|token)\s*[:=]\s*['\"][^'\"]+['\"]" --include="*.ts" --include="*.js" .
+  message: "No hardcoded secrets allowed in source code"
+
+# SPDX headers present
+must spdx-headers:
+  condition: |
+    for f in engine/src/*.ts ssg/src/*.ts; do
+      head -2 "$f" | grep -q "SPDX-License-Identifier" || exit 1
+    done
+  message: "All source files must have SPDX license headers"
+
+# ============================================================================
+# DOCUMENTATION REQUIREMENTS
+# ============================================================================
+
+# README must exist and have content
+must readme-exists:
+  condition: test -s README.adoc
+  message: "README.adoc must exist and have content"
+
+# SECURITY.md must be complete
+must security-policy:
+  condition: |
+    grep -q "security@hyperpolymath.dev" SECURITY.md &&
+    ! grep -q "{{" SECURITY.md
+  message: "SECURITY.md must be complete without placeholders"
+
+# ============================================================================
+# BUILD REQUIREMENTS
+# ============================================================================
+
+# Build must succeed
+must build-success:
+  condition: deno task build
+  message: "Build must complete successfully"
+
+# Output directory must be created
+must output-exists:
+  condition: test -d dist
+  message: "dist/ directory must exist after build"
+
+# ============================================================================
+# COVERAGE REQUIREMENTS
+# ============================================================================
+
+# Minimum 70% test coverage
+must coverage-minimum:
+  condition: |
+    deno test --coverage=coverage/ tests/
+    coverage=$(deno coverage coverage/ --json | jq '.coverage')
+    test "$coverage" -ge 70
+  message: "Test coverage must be at least 70%"
+
+# ============================================================================
+# ACCESSIBILITY REQUIREMENTS
+# ============================================================================
+
+# Accessibility schema must be valid
+must a11y-schema:
+  condition: |
+    deno eval "
+      const schema = JSON.parse(Deno.readTextFileSync('a11y/schema.json'));
+      if (!schema.properties) throw new Error('Invalid schema');
+    "
+  message: "Accessibility schema must be valid JSON Schema"
+
+# ============================================================================
+# CI/CD REQUIREMENTS
+# ============================================================================
+
+# GitHub Actions must use SHA-pinned versions
+must pinned-actions:
+  condition: |
+    ! grep -rE "uses:\s+\S+@v\d" .github/workflows/
+  message: "GitHub Actions must use SHA-pinned versions, not version tags"
+
+# CodeQL must be configured
+must codeql-enabled:
+  condition: test -f .github/workflows/codeql.yml
+  message: "CodeQL security scanning must be configured"
+
+# ============================================================================
+# SCM FILE REQUIREMENTS
+# ============================================================================
+
+# All SCM files must exist
+must scm-files:
+  condition: |
+    test -f META.scm &&
+    test -f ECOSYSTEM.scm &&
+    test -f STATE.scm &&
+    test -f PLAYBOOK.scm &&
+    test -f AGENTIC.scm &&
+    test -f NEUROSYM.scm
+  message: "All SCM configuration files must exist"
+
+# SCM files must have correct project name
+must scm-project-name:
+  condition: |
+    grep -q "odd-ssg" META.scm &&
+    grep -q "odd-ssg" ECOSYSTEM.scm &&
+    grep -q "odd-ssg" STATE.scm
+  message: "SCM files must reference odd-ssg project"
+
+# ============================================================================
+# COMPOSITE REQUIREMENTS
+# ============================================================================
+
+# Pre-commit must pass all checks
+must pre-commit:
+  requires:
+    - formatted
+    - linted
+    - check-types
+    - test-pass
+    - no-secrets
+  message: "Pre-commit checks must all pass"
+
+# Release must satisfy all requirements
+must release-ready:
+  requires:
+    - pre-commit
+    - adapter-syntax
+    - spdx-headers
+    - readme-exists
+    - security-policy
+    - scm-files
+    - coverage-minimum
+  message: "All release requirements must be satisfied"

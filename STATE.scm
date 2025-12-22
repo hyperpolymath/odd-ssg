@@ -16,7 +16,12 @@
        (testing ((status . "pending") (completion . 0)))
        (ci-cd ((status . "complete") (completion . 100)))))))
 
-(define blockers-and-issues '((critical ()) (high-priority ())))
+(define blockers-and-issues
+  '((critical ())
+    (high-priority ())
+    (medium-priority
+      (("Add more adapter integration tests" . "testing")
+       ("Expand documentation examples" . "docs")))))
 
 (define critical-next-actions
   '((immediate
