@@ -3,11 +3,7 @@
 ;;; META.scm — odd-ssg
 
 (define-module (odd-ssg meta)
-  #:export (architecture-decisions development-practices design-rationale components))
-
-;; ============================================================================
-;; Architecture Decisions
-;; ============================================================================
+  #:export (architecture-decisions development-practices design-rationale))
 
 (define architecture-decisions
   '((adr-001
@@ -55,35 +51,10 @@
 ;; ============================================================================
 
 (define development-practices
-  '((code-style
-     (languages . ("typescript" "javascript" "deno"))
-     (formatter . "deno fmt")
-     (linter . "deno lint"))
-
-    (security
-     (sast . "CodeQL")
-     (credentials . "env vars only")
-     (command-execution . "Deno.Command with args arrays")
-     (no-eval . #t)
-     (no-shell-injection . #t))
-
-    (testing
-     (framework . "deno test")
-     (coverage-minimum . 70)
-     (bernoulli-verification . #t)
-     (e2e-tests . #t))
-
-    (versioning
-     (scheme . "SemVer 2.0.0"))
-
-    (ci-cd
-     (actions-pinned . #t)
-     (codeql-enabled . #t)
-     (dependabot-enabled . #t))))
-
-;; ============================================================================
-;; Design Rationale
-;; ============================================================================
+  '((code-style (languages . ("javascript" "deno")) (formatter . "deno fmt") (linter . "deno lint"))
+    (security (sast . "CodeQL") (credentials . "env vars only"))
+    (testing (coverage-minimum . 70))
+    (versioning (scheme . "SemVer 2.0.0"))))
 
 (define design-rationale
   '((why-rsr
