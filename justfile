@@ -1,30 +1,47 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
 # odd-ssg Justfile - Task Runner Configuration
+# Integrates with Mustfile.ncl for deployment transitions
 
 # Default recipe - show help
 default:
     @just --list
 
 # ============================================================================
+# RESCRIPT BUILD COMMANDS
+# ============================================================================
+
+# Build ReScript sources
+rescript-build:
+    npx rescript build
+
+# Watch ReScript sources for changes
+rescript-watch:
+    npx rescript build -w
+
+# Clean ReScript build artifacts
+rescript-clean:
+    npx rescript clean
+
+# ============================================================================
 # BUILD COMMANDS
 # ============================================================================
 
-# Build the project
-build:
-    deno task build
+# Build the project (ReScript + SSG)
+build: rescript-build
+    deno run --allow-read --allow-write src/ssg/cli.js build
 
 # Build with verbose output
-build-verbose:
-    deno task build --verbose
+build-verbose: rescript-build
+    deno run --allow-read --allow-write src/ssg/cli.js build --verbose
 
 # Build including draft content
-build-drafts:
-    deno task build --drafts
+build-drafts: rescript-build
+    deno run --allow-read --allow-write src/ssg/cli.js build --drafts
 
 # Clean build artifacts
-clean:
-    rm -rf dist/ .cache/ coverage/
+clean: rescript-clean
+    rm -rf dist/ .cache/ coverage/ lib/
     @echo "Cleaned build artifacts"
 
 # Watch for changes and rebuild
@@ -36,44 +53,33 @@ watch:
 # ============================================================================
 
 # Run all tests
-test:
-    deno test --allow-read --allow-write tests/
+test: rescript-build
+    deno test --allow-read --allow-write src/tests/
 
 # Run unit tests only
-test-unit:
-    deno test --allow-read --allow-write tests/unit/
+test-unit: rescript-build
+    deno test --allow-read --allow-write src/tests/
 
 # Run end-to-end tests
-test-e2e:
-    deno test --allow-read --allow-write --allow-run tests/e2e/
+test-e2e: rescript-build
+    deno test --allow-read --allow-write --allow-run src/tests/e2e/
 
 # Run all tests with coverage
-test-coverage:
-    deno test --allow-read --allow-write --coverage=coverage/ tests/
+test-coverage: rescript-build
+    deno test --allow-read --allow-write --coverage=coverage/ src/tests/
     deno coverage coverage/
 
 # Run tests in watch mode
 test-watch:
-    deno test --allow-read --allow-write --watch tests/
-
-# Run Bernoulli verification tests
-test-bernoulli:
-    deno test --allow-read tests/unit/bernoulli.test.ts
-
-# Run all tests (alias)
-test-all: test-unit test-e2e test-bernoulli
+    deno test --allow-read --allow-write --watch src/tests/
 
 # ============================================================================
 # LANGUAGE SERVER & TOOLING
 # ============================================================================
 
 # Start the language server
-lsp:
-    deno run --allow-read --allow-write noteg-lang/src/lsp/server.ts
-
-# Compile a .noteg file
-compile file:
-    deno run --allow-read --allow-write noteg-lang/src/compiler.ts {{file}}
+lsp: rescript-build
+    deno run --allow-read --allow-write src/noteg-lang/lsp/main.js
 
 # Lint the codebase
 lint:
@@ -83,53 +89,37 @@ lint:
 fmt:
     deno fmt
 
-# Check types
+# Check JavaScript (compiled from ReScript)
 check:
-    deno check **/*.ts
+    deno check src/**/*.js
 
 # ============================================================================
 # DEVELOPMENT
 # ============================================================================
 
 # Start development server
-dev:
+dev: rescript-build
     deno task dev
 
 # Run the MCP server
-mcp:
-    deno run --allow-read --allow-write --allow-run noteg-mcp/server.ts
-
-# Generate types from schema
-codegen:
-    deno run --allow-read --allow-write scripts/codegen.ts
+mcp: rescript-build
+    deno run --allow-read --allow-write --allow-run src/noteg-mcp/main.js
 
 # ============================================================================
-# ADAPTERS
+# POLICY ENFORCEMENT
 # ============================================================================
 
-# Test all SSG adapters
-test-adapters:
-    deno test --allow-read --allow-run adapters/
+# Check language policy compliance
+policy-check:
+    deno run --allow-read scripts/check-policy.js
 
-# List available adapters
-list-adapters:
-    @ls -1 adapters/*.js | xargs -I{} basename {} .js | sort
+# Validate Mustfile.ncl
+mustfile-validate:
+    @nickel export Mustfile.ncl > /dev/null && echo "Mustfile.ncl is valid"
 
-# Check adapter syntax
-check-adapters:
-    @for f in adapters/*.js; do deno check "$$f" 2>&1 || echo "FAIL: $$f"; done
-
-# ============================================================================
-# ACCESSIBILITY
-# ============================================================================
-
-# Validate accessibility schema
-a11y-validate:
-    deno run --allow-read scripts/validate-a11y.ts
-
-# Generate accessibility report
-a11y-report:
-    deno run --allow-read --allow-write scripts/a11y-report.ts
+# Run pre-commit checks
+pre-commit: fmt lint check policy-check test-unit
+    @echo "Pre-commit checks passed"
 
 # ============================================================================
 # CONTAINER & DEPLOYMENT
@@ -148,44 +138,50 @@ container-push registry="ghcr.io/hyperpolymath":
     podman push odd-ssg:latest {{registry}}/odd-ssg:latest
 
 # ============================================================================
+# MUSTFILE TRANSITIONS (Contract of Physical State)
+# ============================================================================
+
+# Transition: clean -> development
+must-dev: rescript-build
+    @echo "Transitioned to: development"
+
+# Transition: development -> tested
+must-test: test
+    @echo "Transitioned to: tested"
+
+# Transition: tested -> built
+must-build: must-test build
+    @echo "Transitioned to: built"
+
+# Transition: built -> deployed
+must-deploy registry="ghcr.io/hyperpolymath": must-build container-build
+    podman push odd-ssg:latest {{registry}}/odd-ssg:latest
+    @echo "Transitioned to: deployed"
+
+# ============================================================================
 # DOCUMENTATION
 # ============================================================================
 
 # Generate documentation
-docs:
-    deno run --allow-read --allow-write scripts/gen-docs.ts
+docs: rescript-build
+    deno run --allow-read --allow-write scripts/gen-docs.js
 
 # Serve documentation locally
-docs-serve:
-    deno run --allow-read --allow-net scripts/serve-docs.ts
+docs-serve: docs
+    deno run --allow-read --allow-net scripts/serve-docs.js
 
 # ============================================================================
 # RELEASE & CI
 # ============================================================================
 
 # Prepare release
-release version:
+release version: must-build docs
     @echo "Preparing release {{version}}..."
-    @just test-all
-    @just lint
-    @just check
-    @just docs
     @echo "Release {{version}} ready"
 
 # CI pipeline simulation
-ci:
-    @echo "Running CI pipeline..."
-    just check
-    just lint
-    just test-all
+ci: policy-check lint must-test
     @echo "CI passed!"
-
-# Pre-commit checks
-pre-commit:
-    just fmt
-    just lint
-    just check
-    just test-unit
 
 # ============================================================================
 # UTILITIES
@@ -193,18 +189,18 @@ pre-commit:
 
 # Show project info
 info:
-    @echo "odd-ssg - Satellite SSG Adapter Provider"
+    @echo "odd-ssg - Probabilistic Static Site Generator"
     @echo "Version: 0.1.0"
-    @echo "Adapters: $(ls -1 adapters/*.js | wc -l)"
+    @echo "Language: ReScript → JavaScript (Deno runtime)"
     @echo "Deno: $(deno --version | head -1)"
 
 # Update dependencies
 update:
-    deno cache --reload mod.ts
+    deno cache --reload src/Mod.res.js
 
 # Generate lockfile
 lock:
-    deno cache --lock=deno.lock --lock-write mod.ts
+    deno cache --lock=deno.lock --lock-write src/Mod.res.js
 
 # Run arbitrary deno command
 deno +args:
