@@ -1,295 +1,137 @@
 = odd-ssg
-:toc: macro
+:toc: auto
 :toclevels: 2
 :icons: font
 
-Satellite SSG adapter provider with 30 MCP-compatible adapters for static site generators.
+Static site generator in betlang.
 
 image:https://img.shields.io/badge/license-AGPL--3.0--or--later-blue[License]
 image:https://img.shields.io/badge/RSR-Gold-gold[RSR Compliance]
-image:https://img.shields.io/badge/adapters-30-green[Adapters]
+image:https://img.shields.io/badge/poly--ssg--mcp-integrated-purple[poly-ssg-mcp]
+image:https://img.shields.io/badge/status-experimental-orange[Status]
 
-toc::[]
+_Let odds favor. Let ternaries decide. Let pages emerge._
 
-== Overview
+== Who Is This For?
 
-odd-ssg is a satellite implementation in the hyperpolymath ecosystem that provides:
+* **Probabilistic programming enthusiasts** seeking a practical application of ternary reasoning
+* **Data-driven content strategists** wanting native A/B/C testing without external tools
+* **Racket developers** building sites with functional elegance
+* **Uncertainty modelers** who see content as weighted outcomes, not fixed artifacts
 
-* **30 SSG Adapters** - MCP-compatible adapters for static site generators across 15+ languages
-* **Mill-Based Synthesis Engine** - Template processing inspired by Ada Lovelace's Analytical Engine
-* **NoteG Language Tooling** - Lexer, parser, and LSP for .noteg files
-* **Accessibility First** - Native support for BSL, ASL, GSL, Makaton, and Easy Read
+== Why odd-ssg?
 
-== Quick Start
+Static sites are traditionally deterministic—same input, same output. But content decisions are rarely binary. Should this hero image appear? Which call-to-action converts best? What tone suits this audience segment?
+
+odd-ssg embraces uncertainty. Built on https://github.com/hyperpolymath/betlang[betlang], a ternary probabilistic DSL for Racket, it treats content selection as a three-valued bet:
+
+[source,racket]
+----
+;; Content varies by weighted probability
+(define hero-variant
+  (bet 0.5 "hero-bold.html"      ; 50% - bold messaging
+       0.3 "hero-subtle.html"    ; 30% - subtle approach
+       0.2 "hero-minimal.html")) ; 20% - minimal design
+
+;; Conditional content based on audience signals
+(define cta
+  (bet/when high-intent?
+    0.6 "buy-now"
+    0.3 "learn-more"
+    0.1 "subscribe"))
+----
+
+Where traditional SSGs hardcode choices, odd-ssg lets probability guide them. Each build can explore the decision space, producing statistically varied outputs for testing, personalization, or creative exploration.
+
+== Getting Started
 
 [source,bash]
 ----
-# Clone repository
+# Requires Racket 8.0+ with betlang installed
+raco pkg install betlang
+
+# Clone and build
 git clone https://github.com/hyperpolymath/odd-ssg
 cd odd-ssg
-
-# Install dependencies (using asdf)
-asdf install
-
-# Run tests
-just test
-
-# Start MCP server
-just mcp
+just build
 ----
 
-== Supported SSG Adapters
+== How It Works
 
-[cols="2,3,3"]
+----
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│   Source    │────▶│   Parser    │────▶│  Bet Engine │────▶│   Emitter   │
+│  (.noteg)   │     │  (Racket)   │     │  (betlang)  │     │  (HTML/etc) │
+└─────────────┘     └─────────────┘     └─────────────┘     └─────────────┘
+                                              │
+                                              ▼
+                                    ┌─────────────────────┐
+                                    │  Probability Store  │
+                                    │  (reproducible via  │
+                                    │   seed or sample)   │
+                                    └─────────────────────┘
+----
+
+=== Core Concepts
+
 |===
-|Language |SSGs |Status
+|Concept |Description |Example
 
-|Rust
-|Zola, Cobalt, mdBook
-|✅ Complete
+|**Ternary Bet**
+|Three-way weighted choice
+|`(bet 0.5 a 0.3 b 0.2 c)`
 
-|Haskell
-|Hakyll, Ema
-|✅ Complete
+|**Conditional Bet**
+|Probability shifts based on predicate
+|`(bet/when condition ...)`
 
-|Elixir
-|Serum, NimblePublisher, Tableau
-|✅ Complete
+|**Lazy Evaluation**
+|Only selected branch computes
+|Efficient for heavy templates
 
-|Clojure
-|Cryogen, Perun, Babashka
-|✅ Complete
-
-|Racket
-|Frog, Pollen
-|✅ Complete
-
-|Julia
-|Franklin.jl, Documenter.jl, StaticWebPages.jl
-|✅ Complete
-
-|Scala
-|Laika, ScalaTex
-|✅ Complete
-
-|OCaml
-|YOCaml
-|✅ Complete
-
-|Swift
-|Publish
-|✅ Complete
-
-|Kotlin
-|Orchid
-|✅ Complete
-
-|Crystal
-|Marmot
-|✅ Complete
-
-|Nim
-|Nimrod
-|✅ Complete
-
-|D
-|Reggae
-|✅ Complete
-
-|F#
-|Fornax
-|✅ Complete
-
-|Erlang
-|Zotonic
-|✅ Complete
-
-|Tcl
-|Wub
-|✅ Complete
-
-|Common Lisp
-|Coleslaw
-|✅ Complete
+|**Seed Reproducibility**
+|Same seed = same choices
+|`--seed 42` for deterministic builds
 |===
 
-== Usage
+== Features
 
-=== As MCP Server
+* **Native A/B/C testing** — Generate variant pages from single source
+* **Weighted template selection** — Probability-driven layouts
+* **Ternary content states** — Beyond draft/published: draft/review/live
+* **Statistical sampling** — Monte Carlo builds for coverage analysis
+* **Seed-locked reproducibility** — Deterministic output when needed
+* **NoteG language support** — Custom notation with LSP integration
 
-[source,bash]
-----
-# Start the MCP server
-deno run --allow-read --allow-write --allow-run noteg-mcp/server.ts
+== poly-ssg-mcp Integration
 
-# Or use just
-just mcp
-----
+odd-ssg is a satellite of the https://github.com/hyperpolymath/poly-ssg-mcp[poly-ssg-mcp] ecosystem, which provides unified MCP tooling across static site generators. Related projects:
 
-=== As Library
+* https://github.com/hyperpolymath/poly-container-mcp[poly-container-mcp] — Container management (nerdctl, podman, docker)
+* https://github.com/hyperpolymath/poly-iac-mcp[poly-iac-mcp] — Infrastructure as Code (OpenTofu, Terraform, Pulumi)
+* https://github.com/hyperpolymath/poly-k8s-mcp[poly-k8s-mcp] — Kubernetes orchestration
 
-[source,typescript]
-----
-import { Engine, loadAdapter, ADAPTERS } from "@hyperpolymath/odd-ssg";
-
-// List available adapters
-console.log("Available adapters:", ADAPTERS);
-
-// Load and use an adapter
-const zola = await loadAdapter("zola");
-const connected = await zola.connect();
-
-if (connected) {
-  const result = await zola.tools
-    .find(t => t.name === "zola_build")
-    .execute({ path: "./my-site" });
-  console.log(result);
-}
-----
-
-=== Build System
-
-[source,bash]
-----
-# Build commands
-just build              # Build the project
-just build-drafts       # Include drafts
-just watch              # Watch mode
-
-# Test commands
-just test               # All tests
-just test-unit          # Unit tests
-just test-e2e           # E2E tests
-just test-bernoulli     # Bernoulli verification
-
-# Development
-just dev                # Development server
-just lsp                # Start language server
-just lint               # Lint code
-just fmt                # Format code
-----
-
-== Architecture
-
-=== Mill-Based Synthesis Engine
-
-The core engine implements Ada Lovelace's Analytical Engine paradigm:
-
-* **Operation Cards** - Template instructions
-* **Variable Cards** - Data bindings
-* **Mill** - Processing unit
-* **Store** - Variable persistence
-
-[source,typescript]
-----
-import { Engine, createMill, createStore } from "@hyperpolymath/odd-ssg";
-
-const engine = new Engine();
-engine.loadVariables([
-  { name: "title", type: "string", value: "Hello World" }
-]);
-
-const result = await engine.execute([
-  { operation: "load", operands: ["title"] },
-  { operation: "emit", operands: [] }
-]);
-----
-
-=== MCP Protocol
-
-Adapters expose tools via the Model Context Protocol:
+The ReScript adapter exposes odd-ssg to AI assistants via Model Context Protocol:
 
 [source,json]
 ----
 {
   "tools": [
-    {
-      "name": "zola_build",
-      "description": "Build the Zola site",
-      "inputSchema": {
-        "type": "object",
-        "properties": {
-          "path": { "type": "string" },
-          "baseUrl": { "type": "string" },
-          "outputDir": { "type": "string" }
-        }
-      }
-    }
+    { "name": "odd_build", "description": "Build with probability sampling" },
+    { "name": "odd_variants", "description": "Generate N variant builds" },
+    { "name": "odd_lock", "description": "Lock choices with seed" }
   ]
 }
 ----
 
-== Accessibility
+== Requirements
 
-odd-ssg provides native accessibility support:
-
-* **BSL** - British Sign Language metadata
-* **ASL** - American Sign Language metadata
-* **GSL** - German Sign Language metadata
-* **Makaton** - Symbol-based communication
-* **Easy Read** - Simplified content versions
-
-See link:a11y/schema.json[Accessibility Schema] for details.
-
-== Project Structure
-
-[source]
-----
-odd-ssg/
-├── adapters/           # 30 SSG adapters
-├── engine/src/         # Mill-based synthesis core
-├── ssg/src/            # Site generation pipeline
-├── noteg-lang/src/     # Language tooling (lexer, parser, LSP)
-├── noteg-mcp/          # MCP server
-├── a11y/               # Accessibility schemas
-├── tests/              # Unit, E2E, Bernoulli tests
-├── examples/           # Example content and config
-├── *.scm               # SCM configuration files
-├── justfile            # Task runner
-├── Mustfile            # Declarative requirements
-├── Containerfile       # Container build
-└── cookbook.adoc       # Recipes and workflows
-----
-
-== SCM Files
-
-* link:META.scm[META.scm] - Architecture decisions, development practices
-* link:ECOSYSTEM.scm[ECOSYSTEM.scm] - Ecosystem position, related projects
-* link:STATE.scm[STATE.scm] - Current state, completion metrics
-* link:PLAYBOOK.scm[PLAYBOOK.scm] - Operational runbooks
-* link:AGENTIC.scm[AGENTIC.scm] - AI agent integration
-* link:NEUROSYM.scm[NEUROSYM.scm] - Neuro-symbolic reasoning
-
-== Security
-
-* CodeQL analysis on all PRs
-* SHA-pinned GitHub Actions
-* Deno permission model for sandboxing
-* No eval or shell injection
-* Environment-only credentials
-
-See link:SECURITY.md[Security Policy] for vulnerability reporting.
-
-== Contributing
-
-See link:CONTRIBUTING.md[Contributing Guide] for guidelines.
-
-[source,bash]
-----
-# Pre-commit checks
-just pre-commit
-
-# Full CI simulation
-just ci
-----
+* **Racket** 8.0 or later
+* **betlang** — `raco pkg install betlang`
+* **Deno** — For adapter and MCP server
 
 == License
 
 AGPL-3.0-or-later
 
 Copyright 2025 Jonathan D.A. Jewell
-
-== Links
-
-* https://github.com/hyperpolymath/poly-ssg-mcp[poly-ssg-mcp] - Hub project
-* https://github.com/hyperpolymath/rhodium-standard-repositories[RSR] - Compliance standard
